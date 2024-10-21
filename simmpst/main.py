@@ -35,7 +35,7 @@ class BurmeseConverter:
         except Exception as e:
             raise Exception(f"An error occurred during conversion: {e}")
 
-    def process_text(self, option: int, user_input: str) -> str:
+    def syllable_tokenization(self, option: int, user_input: str) -> str:
         """
         Process Burmese text by tokenizing and normalizing it.
         

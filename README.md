@@ -21,28 +21,46 @@ Burmese-to-Romanization: Converts Burmese script into its Romanized equivalent, 
 # Import the BurmeseConverter from the Siamese module
 from Siamese import BurmeseConverter
 
-# Load the converter with the appropriate conversion file
-converter = BurmeseConverter('uni-zaw.p')
+converter = BurmeseConverter()
 
-# Example of converting Zawgyi text to Unicode
+# Example: Zawgyi to Unicode
 zawgyi_text = "ဖြွှော်"
 try:
     # Convert Zawgyi text to Unicode
-    unicode_output = converter.zaw_to_uni(zawgyi_text)
+    unicode_output = converter.zawgyi_to_unicode(zawgyi_text)
     # Print the Unicode output
     print("Unicode Output:", unicode_output)
 except Exception as e:
     # Handle any errors that occur during conversion
     print(f"Error in Zawgyi to Unicode conversion: {e}")
 
-# Example of converting Burmese text to Romanized output
+# Example: Tokenization of a Burmese word
+tokenization_text = "တက္ကသိုလ်"
+try:
+    # Tokenize the Burmese word. 1 means With the virama mark. If you dont want to tokenize the virama mark, you can type any numbers except 1
+    tokenized_output = converter.syllable_tokenization(1, tokenization_text) # try with process_text in case it cannot work with syllable_tokenization
+    print("Tokenized Output:", tokenized_output)
+except Exception as e:
+    # Handle any errors that occur during tokenization
+    print(f"Cannot Tokenize the word: {e}")
+
+# Example: Convert Burmese text to Romanized script
 burmese_text = "ကော်"
 try:
     # Convert Burmese text to Romanized script
-    romanized_output = converter.burmese_to_romanize(burmese_text)
+    romanized_output = converter.burmese_to_romanization(burmese_text)
     # Print the Romanized output
     print("Romanized Output:", romanized_output)
 except Exception as e:
     # Handle any errors that occur during Romanization
     print(f"Error in Burmese Romanization: {e}")
+
+# Example: Romanization Burmese
+burmese_text = "le kReAc: liuc:, K rI: sq a mHt, ၂ ၂ ၈ ၃, jQ, SeAF piu liu mRiu., lU ne rp kWk peAF jiu., pYk kY KL. pRI:, liuk pA lA jU, ၆ ၂, OO: s luN:, je SuN: KL. jQ // "
+try:
+    burmese_output = converter.romanization_to_burmese(burmese_text)
+    print("Burmese Output:", burmese_output)
+except Exception as e:
+    print(f"Error in Romanization Burmese: {e}")
+
 ```

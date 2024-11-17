@@ -1,39 +1,36 @@
-import pickle
 import re
 from typing import Dict, Any
 
-
 class BurmeseConverter:
-    def __init__(self, font_dictionary_path: str):
-        try:
-            with open(font_dictionary_path, 'rb') as f:
-                self.font_dictionary: Dict[str, str] = pickle.load(f)
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Font dictionary not found at {font_dictionary_path}")
-        except Exception as e:
-            raise Exception(f"An error occurred while loading the font dictionary: {e}")
+    def __init__(self):
+        self.font_dictionary = {
+                    '္': '်', '်': 'ျ', 'ျ': 'ြ', 'ြ': 'ွ', 'ွ': 'ှ', 'ႆ': 'ဿ', 'ဳ': 'ု', 'ဴ': 'ူ', 'ဿ': 'ူ',
+                    '၀': 'ဝ', '၎': '၎င်း', 'ၚ': 'ါ်', 'ၠ': '္က', 'ၡ': '္ခ', 'ၢ': '္ဂ', 'ၣ': '္ဃ', 'ၥ': '္စ',
+                    'ၦ': '္ဆ', 'ၧ': '္ဆ', 'ၨ': '္ဇ', 'ၩ': '္ဈ', 'ၪ': 'ဉ', 'ၫ': 'ည', 'ၬ': '္ဋ', 'ၭ': '္ဌ',
+                    'ၮ': 'ဍ္ဍ', 'ၯ': 'ဍ္ဎ', 'ၰ': '္ဏ', 'ၱ': '္တ', 'ၲ': '္တ', 'ၳ': '္ထ', 'ၴ': '္ထ', 'ၵ': '္ဒ',
+                    'ၶ': '္ဓ', 'ၷ': '္န', 'ၸ': '္ပ', 'ၹ': '္ဖ', 'ၺ': '္ဗ', 'ၻ': '္ဘ', 'ၼ': '္မ', 'ၽ': 'ျ',
+                    'ၾ': 'ြ', 'ၿ': 'ြ', 'ႀ': 'ြ', 'ႁ': 'ြ', 'ႂ': 'ြ', 'ႃ': 'ြ', 'ႄ': 'ြ', 'ႅ': '္လ', 'ႇ': 'ှ',
+                    'ႈ': 'ှု', 'ႉ': 'ှူ', 'ႊ': 'ွှ', 'ႎ': 'ိံ', 'ႏ': 'န', '႐': 'ရ', '႑': 'ဏ္ဍ', '႒': 'ဋ္ဌ',
+                    '႓': '္ဘ', '႔': '့', '႕': '့', '႖': '္တွ', '႗': 'ဋ္ဋ', 'ၤ': 'င်္'
+                }
 
-    def zaw_to_uni(self, text: str) -> str:
-        """
-        Convert Zawgyi to Unicode.
-        
-        :param text: Zawgyi text input
-        :return: Unicode text output
-        """
-        try:
-            lst = list(text)
-            for i, char in enumerate(lst):
-                if char in self.font_dictionary:
-                    lst[i] = self.font_dictionary[char]
+    def zawgyi_to_unicode(self, text):
+        # Replace characters based on font dictionary
+        char_list = list(text)
+        for i, char in enumerate(char_list):
+            if char in self.font_dictionary:
+                char_list[i] = self.font_dictionary[char]
 
-            result = "".join(lst)
+        # Join modified characters back into a string
+        converted_text = "".join(char_list)
 
-            uni_pattern = r"(ေ)?(ြ)?([က-ဩဿၐ-ၕၚ-ၝၡၥၦၮ-ၰၵ-ႁႎ႐-႙႞႟])(ွ)?(ှ)?(ျ)?(င်္)?(ွ)?(ှ)?(ာ)?(း)?(္[က-ဘမလ])?"
-            result = re.sub(uni_pattern, r"\7\3\12\2\6\8\4\9\5\1\10\11", result)
+        # Regular expression pattern for ordering characters in Unicode
+        uni_pattern = r"(ေ)?(ြ)?([က-ဩဿၐ-ၕၚ-ၝၡၥၦၮ-ၰၵ-ႁႎ႐-႙႞႟])(ွ)?(ှ)?(ျ)?(င်္)?(ွ)?(ှ)?(ာ)?(း)?(္[က-ဘမလ])?"
 
-            return result
-        except Exception as e:
-            raise Exception(f"An error occurred during conversion: {e}")
+        # Reorder characters to match Unicode standard
+        result = re.sub(uni_pattern, r"\7\3\12\2\6\8\4\9\5\1\10\11", converted_text)
+
+        return result
 
     def syllable_tokenization(self, option: int, user_input: str) -> str:
         """
@@ -54,7 +51,7 @@ class BurmeseConverter:
         except Exception as e:
             raise Exception(f"An error occurred during text processing: {e}")
 
-    def burmese_to_romanize(self, text: str) -> str:
+    def burmese_to_romanization(self, text: str) -> str:
         """
         Convert Burmese text to Romanized form.
         
@@ -62,64 +59,117 @@ class BurmeseConverter:
         :return: Romanized text output
         """
         burmese_to_roman: Dict[str, str] = {
-            'က': 'k', 'ခ': 'K', 'ဂ': 'g', 'ဃ': 'G', 'င': 'c', "၎င်": "4c", "၏": "E", "၍": "rx", "၌": "Nx", "င်္": "F",
-            'စ': 's', 'ဆ': 'S', 'ဇ': 'z', 'ဈ': 'Z', "ဉ": "q", 'ည': 'Q', "ဋ": "tx", "ဌ": "Tx", "ဍ": "dx", "ဎ": "Dx", "ဏ": "nx",
-            "ရ": "r", "ဓ": "D", "တ": "t", "ထ": "T", "ဒ": "d", "န": "n", "ပ": "p", "ဖ": "P", "ဗ": "b", "ဘ": "B", "မ": "m",
-            "ယ": "y", "ဝ": "W", "သ": "j", "ဟ": "H", "အ": "a", 'လ': 'l', "ဠ": "lx", "ဣ": "ix", "ဤ": "I",
-            "၊": "/", "။": "//", "ဥ": "U", "ဦ": "O", "ဧ": "A", "ဩ": "J", "ဪ": "Joo", "ါ": "a", "ာ": "a", "ိ": "i", "ီ": "ii",
-            "ု": "u", "ူ": "uu", "ေ": "e", "ဲ": "L", "ံ": "’", "့": ".", "း": ":", "ျ": "Y", "ြ": "R", "ွ": "w", "ှ": "h",
-            "ဿ": "jx", "်": ""
-        }
+        'က': 'k', 'ခ': 'K', 'ဂ': 'g', 'ဃ': 'G', 'င': 'c', "၏": "E", "၍": "rx", "၌": "Nx", "င်္": "f",
+        'စ': 's', 'ဆ': 'S', 'ဇ': 'z', 'ဈ': 'Z', "ဉ": "q", 'ည': 'Q', "ဋ": "tx", "ဌ": "Tx", "ဍ": "dx", "ဎ": "Dx", "ဏ": "nx",
+        "ရ": "r", "ဓ": "D", "တ": "t", "ထ": "T", "ဒ": "d", "န": "n", "ပ": "p", "ဖ": "P", "ဗ": "b", "ဘ": "B", "မ": "m",
+        "ယ": "y", "ဝ": "w", "သ": "j", "ဟ": "h", "အ": "a", 'လ': 'l', "ဠ": "lx", "ဣ": "ix", "ဤ": "Ix", "၊": "/", "။": "//", "ဥ": "Ux", "ဦ": "OO", "ဧ": "ax", "ဩ": "O", "ဪ": "OR", "ါ": "A", "ာ": "A", "ိ": "i", "ီ": "I","ေ": "e",
+        "ု": "u", "ူ": "U", "ဲ": "L", "ံ": "N", "့": ".", "း": ":", "ျ": "Y", "ြ": "R", "ွ": "W", "ှ": "H","၎":"4",
+        "ဿ": "jx", "်": ""
+    }
 
         try:
-            text = text.strip()
-            text = re.sub(r'\s+', ' ', text)
-            text = re.sub(r' ', ',', text)
-            text = re.sub(r',+', ',', text)
-
-            # Tokenization for Romanization
-            text = re.sub(r"([က-အ|ဥ|ဦ](င်္|[က-အ][ှ]*[့း]*[်]|([က-အ]္)|[ါ-ှႏꩻ][ꩻ]*){0,}|.)", r"\1 ", text)
+            text = re.sub(r"([က-အ|ဥ|ဦ](င်္|[က-အ][ှ]*[့း]*[်]|([က-အ]္)|[ါ-ှႏꩻ][ꩻ]*){0,}|.)", r"\1 ", text.strip())
+            text = re.sub(r"[\s]{1}", r",", text) # 3 line paung p try
+            text = re.sub(r"[,]{3}",r" ",text) # 3 line paung p try
+            text = re.sub(r",$",r'',text) # 3 line paung p try
             text = re.sub(r"(([က-အ])္ ([က-အ]))", r"\2် \3", text)
 
+            # List of custom rules for converting specific word patterns to Romanized forms
             rules = [
                 (re.compile(r'ကျွန် မ '), "q'm "),
                 (re.compile(r'ကျွန် တော် '), "q't "),
-                (re.compile(r'ကျွန်ပ် '), 'Q" '),
-                (re.compile(r'ဏ် ဍ'), "F")
+                (re.compile(r'ကျွန်ုပ် '), 'Q" '),
             ]
-
             for rule in rules:
                 text = rule[0].sub(rule[1], text)
-            text = re.sub(r"\u1031\u102b\u103a", r"oo", text) # ‌ော်
-            text = re.sub(r"\u1031\u102c\u103a", r"oo", text) # ‌ပေ်
-            # Romanization conversion
+            text = re.sub(r'([‌ေ][က-ဪ]*[ာါ]*[်])', r'\1F', text)
+
+            # Perform Romanization by replacing Burmese characters with Roman equivalents
             for burmese_char, roman_char in sorted(burmese_to_roman.items(), key=lambda x: len(x[0]), reverse=True):
                 text = text.replace(burmese_char, roman_char)
 
-            # Clean-up
-            text = re.sub(r' ,', ",", text)
 
+            text = re.sub(r' ,', "", text)
             return text
         except Exception as e:
-            raise Exception(f"An error occurred during Romanization: {e}")
+            raise Exception(f"An error occurred during Burmese_to_Romanization: {e}")
 
+    def romanization_to_burmese(self,burmese_text):
+        
+        
+            burmese_to_roman = {
+            'က': 'k', 'ခ': 'K', 'ဂ': 'g', 'ဃ': 'G', 'င': 'c', "၏": "E", "၍": "rx", "၌": "Nx", "င်္": "f",
+            'စ': 's', 'ဆ': 'S', 'ဇ': 'z', 'ဈ': 'Z', "ဉ": "q", 'ည': 'Q', "ဋ": "tx", "ဌ": "Tx", "ဍ": "dx", "ဎ": "Dx", "ဏ": "nx",
+            "ရ": "r", "ဓ": "D", "တ": "t", "ထ": "T", "ဒ": "d", "န": "n", "ပ": "p", "ဖ": "P", "ဗ": "b", "ဘ": "B", "မ": "m",
+            "ယ": "y", "ဝ": "w", "သ": "j", "ဟ": "h", "အ": "a", 'လ': 'l', "ဠ": "lx", "ဣ": "ix", "ဤ": "Ix", "်":"F"
+        }
+
+            burmese_to_roman.update({
+            "၊": "/", "။": "//", "ဥ": "Ux", "ဦ": "OO", "ဧ": "ax", "ဩ": "O", "ဪ": "OR", "ါ": "A", "ာ": "A", "ိ": "i", "ီ": "I","ေ": "e",
+            "ု": "u", "ူ": "U", "ဲ": "L", "ံ": "N", "့": ".", "း": ":", "ျ": "Y", "ြ": "R", "ွ": "W", "ှ": "H","၎":"4",
+            "ဿ": "jx"
+        })
+            roman_to_burmese = {v: k for k, v in burmese_to_roman.items()}
+
+            try:
+                def roman_to_special_words(text):
+                    reverse_rules = [
+                        (re.compile(r"q'm"), 'ကျွန် မ '),
+                        (re.compile(r"q't"), 'ကျွန် တော် '),
+                        (re.compile(r'Q"'), 'ကျွန်ုပ် '),
+                    ]
+                    for rule in reverse_rules:
+                        text = rule[0].sub(rule[1], text)
+                    return text
+
+                def romanize_burmese(text):
+                    romanized_text = text
+                    for burmese_char, roman_char in sorted(roman_to_burmese.items(), key=lambda x: len(x[0]), reverse=True):
+                        romanized_text = romanized_text.replace(burmese_char, roman_char)
+                    return romanized_text
+
+                transformed_text = ""
+                burmese_text = re.sub(r"(,)",r'\1 ',burmese_text)
+                burmese_text = roman_to_special_words(burmese_text)
+                for word in burmese_text.split(" "):
+                    word = romanize_burmese(word)
+                    word = re.sub(r"([ခဂငဒဝပ]ေ*)ာ", r"\1ါ", word)
+                    word = re.sub(r"([က-အ])(.*)([က-အ])", r"\1\2\3်", word)
+                    word = re.sub(r"််", "်", word)
+                    transformed_text += word + " "
+                    transformed_text = re.sub(r"၎ငး", "၎င်း", transformed_text)
+
+                return re.sub(r",\s*",r"",transformed_text)
+
+            except Exception as e:
+                return f"An error occurred during Romanization_to_Burmese: {e}"
 
 # Example usage of the class
 if __name__ == "__main__":
-    converter = BurmeseConverter('uni-zaw.p')
+    converter = BurmeseConverter()
 
     # Example: Zawgyi to Unicode
-    zawgyi_text = "ဖြွှော်"
+    zawgyi_text = "သီဟိုဠ္မွ ဉာဏ္ႀကီးရွင္သည္ အာယုဝၯနေဆးၫႊန္းစာကို ဇလြန္ေဈးေဘး ဗာဒံပင္ထက္ အဓိ႒ာန္လ်က္ ဂဃနဏဖတ္ခဲ့သည္။"
     try:
-        unicode_output = converter.zaw_to_uni(zawgyi_text)
+        unicode_output = converter.zawgyi_to_unicode(zawgyi_text)
         print("Unicode Output:", unicode_output)
     except Exception as e:
         print(f"Error in Zawgyi to Unicode conversion: {e}")
 
     # Example: Burmese Romanization
-    burmese_text = "ကော်"
+    burmese_text = "လေကြောင်းလိုင်း ခရီးစဉ်အမှတ် ၂၂၈၃ သည် ဆော်ပိုလိုမြို့ လူနေရပ်ကွက်ပေါ်သို့ ပျက်ကျခဲ့ပြီး လိုက်ပါလာသူ ၆၂ ဦးစလုံး သေဆုံးခဲ့သည်။"
     try:
-        romanized_output = converter.burmese_to_romanize(burmese_text)
+        romanized_output = converter.burmese_to_romanization(burmese_text)
         print("Romanized Output:", romanized_output)
     except Exception as e:
         print(f"Error in Burmese Romanization: {e}")
+    
+    # Example: Romanization Burmese
+    burmese_text = "le kReAc: liuc:, K rI: sq a mHt, ၂ ၂ ၈ ၃, jQ, SeAF piu liu mRiu., lU ne rp kWk peAF jiu., pYk kY KL. pRI:, liuk pA lA jU, ၆ ၂, OO: s luN:, je SuN: KL. jQ // "
+    try:
+        burmese_output = converter.romanization_to_burmese(burmese_text)
+        print("Burmese Output:", burmese_output)
+    except Exception as e:
+        print(f"Error in Romanization Burmese: {e}")
+
+

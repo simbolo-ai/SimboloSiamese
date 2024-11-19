@@ -68,11 +68,11 @@ class BurmeseConverter:
     }
 
         try:
-            text = re.sub(r"([က-အ|ဥ|ဦ](င်္|[က-အ][ှ]*[့း]*[်]|([က-အ]္)|[ါ-ှႏꩻ][ꩻ]*){0,}|.)", r"\1 ", text.strip())
-            text = re.sub(r"[\s]{1}", r",", text) # 3 line paung p try
-            text = re.sub(r"[,]{3}",r" ",text) # 3 line paung p try
-            text = re.sub(r",$",r'',text) # 3 line paung p try
-            text = re.sub(r"(([က-အ])္ ([က-အ]))", r"\2် \3", text)
+            tokenize_text = re.sub(r"([က-အ|ဥ|ဦ](င်္|[က-အ][ှ]*[့း]*[်]|([က-အ]္)|[ါ-ှႏꩻ][ꩻ]*){0,}|.)", r"\1 ", text.strip())
+            white_space_replace_comma = re.sub(r"[\s]{1}", r",", tokenize_text) # 3 line paung p try
+            comma_replace_white_space = re.sub(r"[,]{3}",r" ",white_space_replace_comma) # 3 line paung p try
+            remove_comma = re.sub(r",$",r'',comma_replace_white_space) # 3 line paung p try
+            add_a_thet_behind_pat_sint = re.sub(r"(([က-အ])္ ([က-အ]))", r"\2် \3", remove_comma)
 
             # List of custom rules for converting specific word patterns to Romanized forms
             rules = [
@@ -81,16 +81,16 @@ class BurmeseConverter:
                 (re.compile(r'ကျွန်ုပ် '), 'Q" '),
             ]
             for rule in rules:
-                text = rule[0].sub(rule[1], text)
+                text = rule[0].sub(rule[1], add_a_thet_behind_pat_sint)
             text = re.sub(r'([‌ေ][က-ဪ]*[ာါ]*[်])', r'\1F', text)
 
             # Perform Romanization by replacing Burmese characters with Roman equivalents
             for burmese_char, roman_char in sorted(burmese_to_roman.items(), key=lambda x: len(x[0]), reverse=True):
                 text = text.replace(burmese_char, roman_char)
 
-
             text = re.sub(r' ,', "", text)
-            return text
+            remove_္ = re.sub(r"(?<=[A-Za-z])္",r"",text)
+            return remove_္
         except Exception as e:
             raise Exception(f"An error occurred during Burmese_to_Romanization: {e}")
 
@@ -133,9 +133,9 @@ class BurmeseConverter:
                 burmese_text = roman_to_special_words(burmese_text)
                 for word in burmese_text.split(" "):
                     word = romanize_burmese(word)
-                    word = re.sub(r"([ခဂငဒဝပ]ေ*)ာ", r"\1ါ", word)
-                    word = re.sub(r"([က-အ])(.*)([က-အ])", r"\1\2\3်", word)
-                    word = re.sub(r"််", "်", word)
+                    word = re.sub(r"([ခဂငဒဝပ]ေ*)ာ", r"\1ါ", word) # If we see the ခဂငဒဝပ the yay chr will be ာ not this ါ
+                    word = re.sub(r"([က-အ])(.*)([က-အ])", r"\1\2\3်", word) # if the vowel is followed by the vowel, the a_thet will be applied
+                    word = re.sub(r"််", "်", word) # if we see the ််  we remove one
                     transformed_text += word + " "
                     transformed_text = re.sub(r"၎ငး", "၎င်း", transformed_text)
 

@@ -89,14 +89,13 @@ class BurmeseConverter:
                 text = text.replace(burmese_char, roman_char)
 
             text = re.sub(r' ,', "", text)
-            remove_္ = re.sub(r"(?<=[A-Za-z])္",r"",text)
-            return remove_္
+            pasint = re.sub(r"္,(.)",r"\1,",text)
+            return pasint
         except Exception as e:
             raise Exception(f"An error occurred during Burmese_to_Romanization: {e}")
 
     def romanization_to_burmese(self,burmese_text):
-        
-        
+    
             burmese_to_roman = {
             'က': 'k', 'ခ': 'K', 'ဂ': 'g', 'ဃ': 'G', 'င': 'c', "၏": "E", "၍": "rx", "၌": "Nx", "င်္": "f",
             'စ': 's', 'ဆ': 'S', 'ဇ': 'z', 'ဈ': 'Z', "ဉ": "q", 'ည': 'Q', "ဋ": "tx", "ဌ": "Tx", "ဍ": "dx", "ဎ": "Dx", "ဏ": "nx",
@@ -123,23 +122,36 @@ class BurmeseConverter:
                     return text
 
                 def romanize_burmese(text):
-                    romanized_text = text
-                    for burmese_char, roman_char in sorted(roman_to_burmese.items(), key=lambda x: len(x[0]), reverse=True):
-                        romanized_text = romanized_text.replace(burmese_char, roman_char)
-                    return romanized_text
+                    segments = re.split(r"(\{.*?\})", text)  # Splits and keeps braces content as separate segments
+                    processed_segments = []
+
+                    for segment in segments:
+                        if segment.startswith("{") and segment.endswith("}"):
+                            processed_segments.append(segment)
+                        else:
+                            romanized_text = segment
+                            for burmese_char, roman_char in sorted(roman_to_burmese.items(), key=lambda x: len(x[0]), reverse=True):
+                                romanized_text = romanized_text.replace(burmese_char, roman_char)
+                            processed_segments.append(romanized_text)
+
+                    return "".join(processed_segments)
 
                 transformed_text = ""
                 burmese_text = re.sub(r"(,)",r'\1 ',burmese_text)
                 burmese_text = roman_to_special_words(burmese_text)
-                for word in burmese_text.split(" "):
-                    word = romanize_burmese(word)
+                burmese_text = romanize_burmese(burmese_text)
+                pasint = re.sub(r'([က-အ])([က-အ])([က-အ])',r"\1\2္\3", burmese_text)
+
+                for word in pasint.split(" "):
                     word = re.sub(r"([ခဂငဒဝပ]ေ*)ာ", r"\1ါ", word) # If we see the ခဂငဒဝပ the yay chr will be ာ not this ါ
                     word = re.sub(r"([က-အ])(.*)([က-အ])", r"\1\2\3်", word) # if the vowel is followed by the vowel, the a_thet will be applied
                     word = re.sub(r"််", "်", word) # if we see the ််  we remove one
+                    word = re.sub(r"်(?=[A-Z])","",word)
                     transformed_text += word + " "
                     transformed_text = re.sub(r"၎ငး", "၎င်း", transformed_text)
-
-                return re.sub(r",\s*",r"",transformed_text)
+                    transformed_text = re.sub(r"([က-အ])္([က-အ])်", r"\1္\2", transformed_text)
+                    remove_curly_bracket = transformed_text.replace('{', '').replace('}', '')
+                return re.sub(r",\s*",r"",remove_curly_bracket)
 
             except Exception as e:
                 return f"An error occurred during Romanization_to_Burmese: {e}"
@@ -171,5 +183,3 @@ if __name__ == "__main__":
         print("Burmese Output:", burmese_output)
     except Exception as e:
         print(f"Error in Romanization Burmese: {e}")
-
-

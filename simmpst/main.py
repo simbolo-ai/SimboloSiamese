@@ -68,29 +68,39 @@ class BurmeseConverter:
     }
 
         try:
-            tokenize_text = re.sub(r"([က-အ|ဥ|ဦ](င်္|[က-အ][ှ]*[့း]*[်]|([က-အ]္)|[ါ-ှႏꩻ][ꩻ]*){0,}|.)", r"\1 ", text.strip())
-            white_space_replace_comma = re.sub(r"[\s]{1}", r",", tokenize_text) # 3 line paung p try
-            comma_replace_white_space = re.sub(r"[,]{3}",r" ",white_space_replace_comma) # 3 line paung p try
-            remove_comma = re.sub(r",$",r'',comma_replace_white_space) # 3 line paung p try
-            add_a_thet_behind_pat_sint = re.sub(r"(([က-အ])္ ([က-အ]))", r"\2် \3", remove_comma)
+    # Preserve text inside braces by identifying it with regex
+            segments = re.split(r'({.*?})', text)  # Split the text by braces
 
-            # List of custom rules for converting specific word patterns to Romanized forms
-            rules = [
-                (re.compile(r'ကျွန် မ '), "q'm "),
-                (re.compile(r'ကျွန် တော် '), "q't "),
-                (re.compile(r'ကျွန်ုပ် '), 'Q" '),
-            ]
-            for rule in rules:
-                text = rule[0].sub(rule[1], add_a_thet_behind_pat_sint)
-            text = re.sub(r'([‌ေ][က-ဪ]*[ာါ]*[်])', r'\1F', text)
+            for i, segment in enumerate(segments):
+                # Skip romanization for text inside braces
+                if segment.startswith('{') and segment.endswith('}'):
+                    continue
+                tokenize_text = re.sub(r"([က-အ|ဥ|ဦ](င်္|[က-အ][ှ]*[့း]*[်]|([က-အ]္)|[ါ-ှႏꩻ][ꩻ]*){0,}|.)", r"\1 ", segment.strip())
+                white_space_replace_comma = re.sub(r"[\s]{1}", r",", tokenize_text) # 3 line paung p try
+                comma_replace_white_space = re.sub(r"[,]{3}",r" ",white_space_replace_comma) # 3 line paung p try
+                remove_comma = re.sub(r",$",r'',comma_replace_white_space) # 3 line paung p try
+                add_a_thet_behind_pat_sint = re.sub(r"(([က-အ])္ ([က-အ]))", r"\2် \3", remove_comma)
 
-            # Perform Romanization by replacing Burmese characters with Roman equivalents
-            for burmese_char, roman_char in sorted(burmese_to_roman.items(), key=lambda x: len(x[0]), reverse=True):
-                text = text.replace(burmese_char, roman_char)
+                # List of custom rules for converting specific word patterns to Romanized forms
+                rules = [
+                    (re.compile(r'ကျွန် မ '), "q'm "),
+                    (re.compile(r'ကျွန် တော် '), "q't "),
+                    (re.compile(r'ကျွန်ုပ် '), 'Q" '),
+                ]
+                for rule in rules:
+                    text = rule[0].sub(rule[1], add_a_thet_behind_pat_sint)
+                text = re.sub(r'([‌ေ][က-ဪ]*[ာါ]*[်])', r'\1F', text)
 
-            text = re.sub(r' ,', "", text)
-            pasint = re.sub(r"္,(.)",r"\1,",text)
-            return pasint
+                # Perform Romanization by replacing Burmese characters with Roman equivalents
+                for burmese_char, roman_char in sorted(burmese_to_roman.items(), key=lambda x: len(x[0]), reverse=True):
+                    text = text.replace(burmese_char, roman_char)
+
+                text = re.sub(r' ,', "", text)
+                segments[i] = re.sub(r"္,(.)", r"\1,", text)
+            result = ' '.join(segments)
+            result = re.sub(r'\s+{', r' {', result)
+            result = re.sub(r'}\s+', r'} ', result)
+            return result
         except Exception as e:
             raise Exception(f"An error occurred during Burmese_to_Romanization: {e}")
 
